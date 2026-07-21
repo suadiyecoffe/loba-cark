@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>LOBA - Canlı İçecek Çarkı & Menü Düzenleyici</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    padding: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #032221;
+    color: #f0f7f6;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* WhatsApp Uygulama İçi Tarayıcı Uyarısı */
+  #inAppWarning {
+    display: none;
+    background-color: #FFD54F;
+    color: #003836;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 11pt;
+    border: 2px solid #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
+
+  .header {
+    text-align: center;
+    padding: 12px;
+    background: linear-gradient(135deg, #003836 0%, #004B49 100%);
+    border-radius: 12px;
+    border: 2px solid #146B68;
+    margin-bottom: 15px;
+  }
+  .logo-title {
+    font-size: 24pt;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #E8F5E9;
+    margin: 0;
+  }
+  .subtitle {
+    font-size: 11pt;
+    color: #80CBC4;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #003836;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #146B68;
+  }
+  
+  /* ÇARK ALANI */
+  .wheel-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .wheel-container {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    max-width: 80vw;
+    max-height: 80vw;
+  }
+  #wheelCanvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    border: 3px solid #FFD54F;
+    transition: transform 4s cubic-bezier(0.15, 0.99, 0.35, 1);
+  }
+  .pointer {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 20px solid #FFD54F;
+    z-index: 10;
+  }
+  .btn-spin {
+    margin-top: 15px;
+    padding: 14px 32px;
+    font-size: 13pt;
+    font-weight: bold;
+    background-color: #FFD54F;
+    color: #003836;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    width: 100%;
+    max-width: 280px;
+  }
+  .btn-spin:active { 
+    background-color: #FFE082; 
+    transform: scale(0.98); 
+  }
+
+  /* TABLO VE KONTROLLER */
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    justify-content: space-between;
+  }
+  button.action-btn {
+    padding: 12px 16px;
+    font-size: 11pt;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .btn-add { background-color: #80CBC4; color: #003836; }
+  .btn-add:active { background-color: #A7FFEB; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+  }
+  th {
+    background-color: #004B49;
+    color: #A7FFEB;
+    padding: 8px;
+    font-size: 10pt;
+    text-align: left;
+    border-bottom: 2px solid #146B68;
+  }
+  td {
+    padding: 6px 4px;
+    border-bottom: 1px solid #004d4a;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 10px 8px;
+    border-radius: 6px;
+    border: 1px solid #146B68;
+    background-color: #002B29;
+    color: #fff;
+    font-size: 11pt;
+  }
+  input[type="text"]:focus {
+    outline: none;
+    border-color: #80CBC4;
+    background-color: #003836;
+  }
+  .btn-delete {
+    background-color: #EF9A9A;
+    color: #801010;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 10pt;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .result-popup {
+    font-size: 14pt;
+    font-weight: bold;
+    color: #A7FFEB;
+    margin-top: 12px;
+    min-height: 28px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- UYGULAMA İÇİ TARAYICI UYARISI -->
+<div id="inAppWarning">
+  ⚠️ Tam deneyim için sağ üstteki <b>(⋮)</b> veya <b>Paylaş</b> butonuna basıp <u>"Safari'de Aç"</u> ya da <u>"Chrome'da Aç"</u> seçeneğini seçin.
+</div>
+
+<div class="header">
+  <div class="logo-title">L O B A</div>
+  <div class="subtitle">Canlı İçecek Çarkı</div>
+</div>
+
+<div class="container">
+  <!-- ÇARK ALANI -->
+  <div class="wheel-area">
+    <div class="pointer"></div>
+    <div class="wheel-container">
+      <canvas id="wheelCanvas" width="360" height="360"></canvas>
+    </div>
+    <button class="btn-spin" onclick="spinWheel()">🎲 ÇARKI ÇEVİR!</button>
+    <div class="result-popup" id="resultText"></div>
+  </div>
+
+  <!-- TABLO ALANI -->
+  <div class="controls">
+    <button class="action-btn btn-add" onclick="addRow()">➕ Yeni İçecek Ekle</button>
+  </div>
+
+  <table id="menuTable">
+    <thead>
+      <tr>
+        <th style="width: 12%;">No</th>
+        <th style="width: 68%;">İçecek / Ürün Adı</th>
+        <th style="width: 20%; text-align: center;">İşlem</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<script>
+  // WhatsApp veya uygulama içi tarayıcı kontrolü
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+  if (ua.indexOf("WhatsApp") > -1 || ua.indexOf("FBAN") > -1 || ua.indexOf("FBAV") > -1) {
+    document.getElementById("inAppWarning").style.display = "block";
+  }
+
+  const colors = [
+    '#FFFFFF', '#FF8B94', '#FFD3B6', '#A0E7E5', '#FFAAA5',
+    '#DCEDC1', '#FFD3E2', '#B39DDB', '#FFF59D', '#80DEEA',
+    '#FFCC80', '#EF9A9A', '#C5E1A5', '#FFE082', '#80CBC4'
+  ];
+
+  let products = [
+    "Redbull White Moctail %5 İndirimli", "Iced Berry Hibiscus Tea", "Mango Lemon Splash %10 İndirimli",
+    "Apple lemonade", "Ube Latte", "Mango Yeşilçay",
+    "Limonotu & Beyaz Şeftali %5 İndirimli", "Spiceberry", "Blueberry Lemonade",
+    "Baristanın Sürprizi", "Elma & Papaya", "Strawberry Lemonade", "Iced Creamista Tiramisu Latte %10 İndirimli",
+  ];
+
+  let currentRotation = 0;
+
+  function drawWheel() {
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const numSlices = products.length;
+    const sliceAngle = (2 * Math.PI) / numSlices;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = 0; i < numSlices; i++) {
+      const angle = i * sliceAngle;
+      
+      ctx.beginPath();
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.moveTo(180, 180);
+      ctx.arc(180, 180, 180, angle, angle + sliceAngle);
+      ctx.lineTo(180, 180);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.save();
+      ctx.translate(180, 180);
+      ctx.rotate(angle + sliceAngle / 2);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#003836";
+      ctx.font = "bold 11pt Arial";
+      
+      let text = products[i];
+      if(text.length > 15) text = text.substring(0, 13) + "..";
+      ctx.fillText(text, 165, 4);
+      ctx.restore();
+    }
+
+    ctx.beginPath();
+    ctx.arc(180, 180, 35, 0, 2 * Math.PI);
+    ctx.fillStyle = "#003836";
+    ctx.fill();
+    ctx.strokeStyle = "#FFD54F";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.fillStyle = "#E8F5E9";
+    ctx.font = "bold 11pt Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("LOBA", 180, 185);
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    products.forEach((prod, index) => {
+      let row = document.createElement('tr');
+      row.innerHTML = `
+        <td style="text-align: center; font-weight: bold; color: #80CBC4;">${index + 1}</td>
+        <td><input type="text" value="${prod}" oninput="updateProduct(${index}, this.value)"></td>
+        <td style="text-align: center;"><button class="btn-delete" onclick="deleteRow(${index})">Sil</button></td>
+      `;
+      tbody.appendChild(row);
+    });
+    drawWheel();
+  }
+
+  function updateProduct(index, val) {
+    products[index] = val;
+    drawWheel();
+  }
+
+  function addRow() {
+    if(products.length >= 13) {
+      alert("En fazla 13 ürün ekleyebilirsiniz.");
+      return;
+    }
+    products.push("Yeni İçecek " + (products.length + 1));
+    renderTable();
+  }
+
+  function deleteRow(index) {
+    if(products.length <= 2) {
+      alert("Çarkta en az 2 ürün olmalıdır.");
+      return;
+    }
+    products.splice(index, 1);
+    renderTable();
+  }
+
+  function spinWheel() {
+    const canvas = document.getElementById('wheelCanvas');
+    const randomSpin = Math.floor(3600 + Math.random() * 3600);
+    currentRotation += randomSpin;
+    canvas.style.transform = `rotate(${currentRotation}deg)`;
+    document.getElementById('resultText').innerText = "Çark dönüyor...";
+
+    setTimeout(() => {
+      const actualRotation = currentRotation % 360;
+      const sliceAngle = 360 / products.length;
+      const winningIndex = Math.floor((360 - (actualRotation % 360) + 270) % 360 / sliceAngle);
+      document.getElementById('resultText').innerText = "🎉 Bugünün Lezzeti: " + products[winningIndex];
+    }, 4000);
+  }
+
+  renderTable();
+</script>
+
+</body>
+</html>
