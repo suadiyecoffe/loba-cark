@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>LOBA - Canlı İçecek Çarkı & Menü Düzenleyici</title>
+<title>LOBA - Canlı İçecek Çarkı</title>
 <style>
   * {
     box-sizing: border-box;
@@ -54,10 +54,10 @@
     margin-top: 4px;
   }
   .container {
-    max-width: 600px;
+    max-width: 500px;
     margin: 0 auto;
     background-color: #003836;
-    padding: 15px;
+    padding: 20px;
     border-radius: 12px;
     border: 1px solid #146B68;
   }
@@ -67,15 +67,15 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     position: relative;
   }
   .wheel-container {
     position: relative;
-    width: 280px;
-    height: 280px;
-    max-width: 80vw;
-    max-height: 80vw;
+    width: 300px;
+    height: 300px;
+    max-width: 85vw;
+    max-height: 85vw;
   }
   #wheelCanvas {
     width: 100%;
@@ -98,7 +98,7 @@
     z-index: 10;
   }
   .btn-spin {
-    margin-top: 15px;
+    margin-top: 20px;
     padding: 14px 32px;
     font-size: 13pt;
     font-weight: bold;
@@ -116,74 +116,18 @@
     transform: scale(0.98); 
   }
 
-  /* TABLO VE KONTROLLER */
-  .controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 12px;
-    justify-content: space-between;
-  }
-  button.action-btn {
-    padding: 12px 16px;
-    font-size: 11pt;
-    font-weight: bold;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    width: 100%;
-  }
-  .btn-add { background-color: #80CBC4; color: #003836; }
-  .btn-add:active { background-color: #A7FFEB; }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 8px;
-  }
-  th {
-    background-color: #004B49;
-    color: #A7FFEB;
-    padding: 8px;
-    font-size: 10pt;
-    text-align: left;
-    border-bottom: 2px solid #146B68;
-  }
-  td {
-    padding: 6px 4px;
-    border-bottom: 1px solid #004d4a;
-  }
-  input[type="text"] {
-    width: 100%;
-    padding: 10px 8px;
-    border-radius: 6px;
-    border: 1px solid #146B68;
-    background-color: #002B29;
-    color: #fff;
-    font-size: 11pt;
-  }
-  input[type="text"]:focus {
-    outline: none;
-    border-color: #80CBC4;
-    background-color: #003836;
-  }
-  .btn-delete {
-    background-color: #EF9A9A;
-    color: #801010;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 6px;
-    font-size: 10pt;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  
   .result-popup {
     font-size: 14pt;
     font-weight: bold;
     color: #A7FFEB;
-    margin-top: 12px;
-    min-height: 28px;
+    margin-top: 15px;
+    min-height: 30px;
     text-align: center;
+  }
+
+  /* Ekleme/Çıkarma Tablosunu Gizleme */
+  .admin-panel {
+    display: none; /* Tablo ve ekleme butonlarını gizler */
   }
 </style>
 </head>
@@ -210,21 +154,22 @@
     <div class="result-popup" id="resultText"></div>
   </div>
 
-  <!-- TABLO ALANI -->
-  <div class="controls">
-    <button class="action-btn btn-add" onclick="addRow()">➕ Yeni İçecek Ekle</button>
+  <!-- DÜZENLEME PANELİ (GİZLENMİŞTİR) -->
+  <div class="admin-panel">
+    <div class="controls">
+      <button class="action-btn btn-add" onclick="addRow()">➕ Yeni İçecek Ekle</button>
+    </div>
+    <table id="menuTable">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>İçecek / Ürün Adı</th>
+          <th>İşlem</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
   </div>
-
-  <table id="menuTable">
-    <thead>
-      <tr>
-        <th style="width: 12%;">No</th>
-        <th style="width: 68%;">İçecek / Ürün Adı</th>
-        <th style="width: 20%; text-align: center;">İşlem</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-  </table>
 </div>
 
 <script>
@@ -240,6 +185,7 @@
     '#FFCC80', '#EF9A9A', '#C5E1A5', '#FFE082', '#80CBC4'
   ];
 
+  // Çarktaki varsayılan ürün listesi
   let products = [
     "Redbull White Moctail %5 İndirimli", "Iced Berry Hibiscus Tea", "Mango Lemon Splash %10 İndirimli",
     "Apple lemonade", "Ube Latte", "Mango Yeşilçay",
@@ -295,44 +241,6 @@
     ctx.fillText("LOBA", 180, 185);
   }
 
-  function renderTable() {
-    const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = '';
-    products.forEach((prod, index) => {
-      let row = document.createElement('tr');
-      row.innerHTML = `
-        <td style="text-align: center; font-weight: bold; color: #80CBC4;">${index + 1}</td>
-        <td><input type="text" value="${prod}" oninput="updateProduct(${index}, this.value)"></td>
-        <td style="text-align: center;"><button class="btn-delete" onclick="deleteRow(${index})">Sil</button></td>
-      `;
-      tbody.appendChild(row);
-    });
-    drawWheel();
-  }
-
-  function updateProduct(index, val) {
-    products[index] = val;
-    drawWheel();
-  }
-
-  function addRow() {
-    if(products.length >= 13) {
-      alert("En fazla 13 ürün ekleyebilirsiniz.");
-      return;
-    }
-    products.push("Yeni İçecek " + (products.length + 1));
-    renderTable();
-  }
-
-  function deleteRow(index) {
-    if(products.length <= 2) {
-      alert("Çarkta en az 2 ürün olmalıdır.");
-      return;
-    }
-    products.splice(index, 1);
-    renderTable();
-  }
-
   function spinWheel() {
     const canvas = document.getElementById('wheelCanvas');
     const randomSpin = Math.floor(3600 + Math.random() * 3600);
@@ -348,7 +256,7 @@
     }, 4000);
   }
 
-  renderTable();
+  drawWheel();
 </script>
 
 </body>
