@@ -34,35 +34,25 @@
 
   .header {
     text-align: center;
-    padding: 16px 12px;
+    padding: 12px;
     background: linear-gradient(135deg, #003836 0%, #004B49 100%);
     border-radius: 12px;
     border: 2px solid #146B68;
     margin-bottom: 15px;
   }
   .logo-title {
-    font-size: 26pt;
+    font-size: 24pt;
     font-weight: 900;
     letter-spacing: 4px;
     color: #E8F5E9;
     margin: 0;
   }
-  
-  /* BİLGİLENDİRME METNİ STİLİ */
-  .info-banner {
+  .subtitle {
     font-size: 11pt;
-    color: #A7FFEB;
-    letter-spacing: 0.5px;
-    margin-top: 8px;
-    line-height: 1.4;
-    font-weight: 500;
-    background: rgba(0, 43, 41, 0.5);
-    padding: 8px 12px;
-    border-radius: 20px;
-    display: inline-block;
-    border: 1px dashed #146B68;
+    color: #80CBC4;
+    letter-spacing: 1px;
+    margin-top: 4px;
   }
-
   .container {
     max-width: 500px;
     margin: 0 auto;
@@ -135,8 +125,9 @@
     text-align: center;
   }
 
+  /* Ekleme/Çıkarma Tablosunu Gizleme */
   .admin-panel {
-    display: none;
+    display: none; /* Tablo ve ekleme butonlarını gizler */
   }
 </style>
 </head>
@@ -149,10 +140,7 @@
 
 <div class="header">
   <div class="logo-title">L O B A</div>
-  <!-- MÜŞTERİ BİLGİLENDİRME METNİ -->
-  <div class="info-banner">
-    🤔 Ne içeceğine karar veremedin mi?<br><b>Çarkı çevir, keyfine bak! 🍹✨</b>
-  </div>
+  <div class="subtitle">Canlı İçecek Çarkı</div>
 </div>
 
 <div class="container">
@@ -166,7 +154,7 @@
     <div class="result-popup" id="resultText"></div>
   </div>
 
-  <!-- DÜZENLEME PANELİ (GİZLİ) -->
+  <!-- DÜZENLEME PANELİ (GİZLENMİŞTİR) -->
   <div class="admin-panel">
     <div class="controls">
       <button class="action-btn btn-add" onclick="addRow()">➕ Yeni İçecek Ekle</button>
@@ -197,6 +185,7 @@
     '#FFCC80', '#EF9A9A', '#C5E1A5', '#FFE082', '#80CBC4'
   ];
 
+  // Çarktaki varsayılan ürün listesi
   let products = [
     "Redbull White Moctail %5 İndirimli", "Iced Berry Hibiscus Tea", "Mango Lemon Splash %10 İndirimli",
     "Apple lemonade", "Ube Latte", "Mango Yeşilçay",
